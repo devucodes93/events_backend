@@ -34,7 +34,7 @@ export const register = async (req, res) => {
     res.status(201).json({
       msg: "User Created Successfully",
       success: true,
-      user: { id: newUser._id },
+      user: newUser,
     });
   } catch (error) {
     console.error(error);
@@ -47,7 +47,6 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    console.log(req.body);
     const { email, password } = req.body;
     if (!email || !password) {
       return res
@@ -72,11 +71,12 @@ export const login = async (req, res) => {
       expiresIn: "7d",
     });
     return res.status(201).json({
-      msg: "User Created Successfully",
+      msg: "Login Successful",
       user: {
         id: userExist._id,
         name: userExist.name,
         email: userExist.email,
+        profilePic: userExist.profilePic,
       },
       success: true,
       token: token,
