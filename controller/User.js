@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 import pool from "../config/db.js";
+
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -18,6 +19,8 @@ export const register = async (req, res) => {
     const userExist = await pool.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
+
+    console.log(userExist);
 
     if (userExist.rows.length > 0) {
       return res.status(400).json({
