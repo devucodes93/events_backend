@@ -1,4 +1,4 @@
-import User from "../model/User.js";
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -52,6 +52,7 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    console.log(req.body);
     const { email, password } = req.body;
     if (!email || !password) {
       return res

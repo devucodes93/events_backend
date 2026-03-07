@@ -1,8 +1,9 @@
 import cloudinary from "../config/cloudinary.js";
-import Event from "../model/Event.js";
+import pool from "../config/db.js";``
+
 export const createEvent = (req, res) => {
   const {
-    title,
+    eventName,
     description,
     organizer,
     phone_number,
@@ -12,15 +13,15 @@ export const createEvent = (req, res) => {
     template_id,
     event_date,
     event_place,
-    event_duration,
+    event_duration_minutes,
   } = req.body;
 
-  const banner = req.files.banner?.[0];
-  const avatar = req.files.avatar?.[0];
-  const consolation_form = req.files.consolation_form?.[0];
+  const banner = req.files?.banner?.[0];
+  const avatar = req.files?.avatar?.[0];
+  const consolation_form = req.files?.consolation_form?.[0];
 
   if (
-    !title ||
+    !eventName ||
     !description ||
     !organizer ||
     !phone_number ||
@@ -31,8 +32,26 @@ export const createEvent = (req, res) => {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-  const newEvent = new Event({
-    title,
+  const query = `
+  INSERT INTO events 
+  (eventName, 
+  description,
+  organizer,
+  phone_number,
+  no_participants,
+  fee,
+  location,
+  template_id,
+  event_date,
+  event_place,
+  event_duration_minutes,
+  banner,
+  avatar,
+  consolation_form) 
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`;
+
+  const newEvent = [
+    eventName,
     description,
     organizer,
     phone_number,
@@ -42,19 +61,21 @@ export const createEvent = (req, res) => {
     template_id,
     event_date,
     event_place,
-    event_duration_minutes: event_duration,
-    banner: banner ? banner.path : undefined,
-    avatar: avatar ? avatar.path : undefined,
-    consolation_form: consolation_form ? consolation_form.path : undefined,
-  });
-  newEvent
-    .save()
-    .then((event) => res.status(201).json(event))
-    .catch((err) =>
+    event_duration_minutes,
+    banner ? banner.path : undefined,
+    avatar ? avatar.path : undefined,
+    consolation_form ? consolation_form.path : undefined,
+  ];
+
+  const result = pool.query(query, newEvent)
+    .then((result) => {
+      res.status(201).json(result.rows[0]);
+    })
+    .catch((err) => {
       res
         .status(500)
-        .json({ message: "Error creating event", error: err.message }),
-    );
+        .json({ message: "Error creating event", error: err.message });
+    });
 };
 
 export const getEventsById = (req, res) => {
